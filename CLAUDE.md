@@ -21,12 +21,20 @@
 
 ## 개발 환경
 
-- **스택:** React + TypeScript
+- **스택:** React + TypeScript + Vite
 - **DB ORM:** Prisma (MySQL 8.0+)
 - **린터:** ESLint 9.x (flat config)
 - **포매터:** Prettier 3.x
 - **테스트:** Vitest + React Testing Library
 - **Git 훅:** Husky + lint-staged
+
+## 개발 서버 명령어
+
+```bash
+npm run dev      # 개발 서버 실행 (http://localhost:5173)
+npm run build    # 타입 체크 + 프로덕션 빌드
+npm run preview  # 빌드 결과물 로컬 미리보기
+```
 
 ## 포매터 명령어
 
