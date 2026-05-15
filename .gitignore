@@ -1,0 +1,29 @@
+# 환경 변수
+.env
+.env.local
+.env.*.local
+
+# 의존성
+node_modules/
+
+# 빌드 산출물
+dist/
+build/
+
+# Prisma
+prisma/migrations/
+
+# 테스트 커버리지
+coverage/
+
+# 에디터
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+
+# OS
+.DS_Store
+Thumbs.db

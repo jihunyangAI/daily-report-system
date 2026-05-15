@@ -1,0 +1,178 @@
+// prisma/schema.prisma
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+// ──────────────────────────────────────────
+// Enum
+// ──────────────────────────────────────────
+
+enum ReportStatus {
+  DRAFT
+  SUBMITTED
+  CONFIRMED
+}
+
+// ──────────────────────────────────────────
+// 영업사원 마스터
+// ──────────────────────────────────────────
+
+model Salesperson {
+  id           Int      @id @default(autoincrement()) @map("salesperson_id")
+  name         String   @db.VarChar(50)
+  department   String   @db.VarChar(100)
+  rank         String   @db.VarChar(50)
+  managerId    Int?     @map("manager_id")
+  email        String   @unique @db.VarChar(200)
+  passwordHash String   @map("password_hash") @db.VarChar(255)
+  hireDate     DateTime @map("hire_date") @db.Date
+  isActive     Boolean  @default(true) @map("is_active")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  // 자기참조: 상급자
+  manager      Salesperson?  @relation("ManagerToSubordinate", fields: [managerId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  subordinates Salesperson[] @relation("ManagerToSubordinate")
+
+  reports  DailyReport[]
+  comments Comment[]
+
+  @@map("salesperson")
+}
+
+// ──────────────────────────────────────────
+// 고객 마스터
+// ──────────────────────────────────────────
+
+model Customer {
+  id          Int      @id @default(autoincrement()) @map("customer_id")
+  companyName String   @map("company_name") @db.VarChar(200)
+  contactName String   @map("contact_name") @db.VarChar(100)
+  phone       String?  @db.VarChar(20)
+  email       String?  @db.VarChar(200)
+  address     String?  @db.VarChar(500)
+  industry    String?  @db.VarChar(100)
+  memo        String?  @db.Text
+  isActive    Boolean  @default(true) @map("is_active")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  visitRecords VisitRecord[]
+
+  @@map("customer")
+}
+
+// ──────────────────────────────────────────
+// 일일보고 헤더
+// ──────────────────────────────────────────
+
+model DailyReport {
+  id            Int          @id @default(autoincrement()) @map("report_id")
+  salespersonId Int          @map("salesperson_id")
+  reportDate    DateTime     @map("report_date") @db.Date
+  status        ReportStatus @default(DRAFT)
+  submittedAt   DateTime?    @map("submitted_at")
+  confirmedAt   DateTime?    @map("confirmed_at")
+  createdAt     DateTime     @default(now()) @map("created_at")
+  updatedAt     DateTime     @updatedAt @map("updated_at")
+
+  salesperson  Salesperson   @relation(fields: [salespersonId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  visitRecords VisitRecord[]
+  problems     Problem[]
+  plans        Plan[]
+
+  // 1사원 1일 1보고
+  @@unique([salespersonId, reportDate])
+  @@index([reportDate])
+  @@index([status])
+  @@map("daily_report")
+}
+
+// ──────────────────────────────────────────
+// 방문기록
+// ──────────────────────────────────────────
+
+model VisitRecord {
+  id            Int       @id @default(autoincrement()) @map("visit_id")
+  reportId      Int       @map("report_id")
+  customerId    Int       @map("customer_id")
+  visitTime     String?   @map("visit_time") @db.VarChar(5)   // "HH:MM"
+  visitPurpose  String?   @map("visit_purpose") @db.VarChar(500)
+  visitContent  String?   @map("visit_content") @db.Text
+  nextVisitDate DateTime? @map("next_visit_date") @db.Date
+
+  report   DailyReport @relation(fields: [reportId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  customer Customer    @relation(fields: [customerId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+
+  @@index([reportId])
+  @@index([customerId])
+  @@map("visit_record")
+}
+
+// ──────────────────────────────────────────
+// 과제/상담 항목
+// ──────────────────────────────────────────
+
+model Problem {
+  id        Int      @id @default(autoincrement()) @map("problem_id")
+  reportId  Int      @map("report_id")
+  seq       Int      @default(1) @db.SmallInt
+  content   String   @db.Text
+  createdAt DateTime @default(now()) @map("created_at")
+
+  report   DailyReport @relation(fields: [reportId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  comments Comment[]
+
+  @@index([reportId])
+  @@map("problem")
+}
+
+// ──────────────────────────────────────────
+// 익일계획 항목
+// ──────────────────────────────────────────
+
+model Plan {
+  id        Int      @id @default(autoincrement()) @map("plan_id")
+  reportId  Int      @map("report_id")
+  seq       Int      @default(1) @db.SmallInt
+  content   String   @db.Text
+  createdAt DateTime @default(now()) @map("created_at")
+
+  report   DailyReport @relation(fields: [reportId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  comments Comment[]
+
+  @@index([reportId])
+  @@map("plan")
+}
+
+// ──────────────────────────────────────────
+// 댓글
+// DDL의 ref_type+ref_id 다형성 →
+// Prisma 관계 선언을 위해 problemId / planId 분리
+// (둘 중 하나만 값이 들어감, 앱 레벨에서 보장)
+// ──────────────────────────────────────────
+
+model Comment {
+  id        Int      @id @default(autoincrement()) @map("comment_id")
+  problemId Int?     @map("problem_id")
+  planId    Int?     @map("plan_id")
+  authorId  Int      @map("author_id")
+  content   String   @db.Text
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  problem Problem?    @relation(fields: [problemId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  plan    Plan?       @relation(fields: [planId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  author  Salesperson @relation(fields: [authorId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+
+  @@index([problemId])
+  @@index([planId])
+  @@index([authorId])
+  @@map("comment")
+}
