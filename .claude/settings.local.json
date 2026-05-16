@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm install *)",
+      "Bash(npm run *)",
+      "Bash(npm audit *)",
+      "Bash(npx prisma *)",
+      "Bash(git init *)",
+      "Bash(npx husky *)",
+      "Bash(node node_modules/.bin/husky init)",
+      "Bash(node node_modules/husky/bin.mjs init)",
+      "Bash(gh auth *)"
+    ]
+  }
+}
