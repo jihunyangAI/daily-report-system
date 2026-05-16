@@ -8,6 +8,7 @@ node_modules/
 
 # 빌드 산출물
 dist/
+dist-server/
 build/
 
 # Prisma
