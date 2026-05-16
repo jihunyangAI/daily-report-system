@@ -31,6 +31,7 @@
     "@types/node": "^25.8.0",
     "@types/react": "^19.1.0",
     "@types/react-dom": "^19.1.0",
+    "@types/react-router-dom": "^5.3.3",
     "@types/supertest": "^7.2.0",
     "@typescript-eslint/eslint-plugin": "^8.31.0",
     "@typescript-eslint/parser": "^8.31.0",
@@ -56,12 +57,14 @@
   },
   "dependencies": {
     "@prisma/client": "^6.19.3",
+    "axios": "^1.16.1",
     "bcryptjs": "^3.0.3",
     "cors": "^2.8.6",
     "express": "^5.2.1",
     "jsonwebtoken": "^9.0.3",
     "react": "^19.2.6",
-    "react-dom": "^19.2.6"
+    "react-dom": "^19.2.6",
+    "react-router-dom": "^7.15.1"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"
