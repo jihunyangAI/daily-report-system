@@ -4,6 +4,7 @@ import healthRouter from './routes/health.js';
 import authRouter from './routes/auth.js';
 import salespersonsRouter from './routes/salespersons.js';
 import customersRouter from './routes/customers.js';
+import reportsRouter from './routes/reports.js';
 import { errorHandler } from './middleware/errorHandler.js';
 import { notFound } from './middleware/notFound.js';
 
@@ -39,6 +40,7 @@ app.use('/api/health', healthRouter);
 app.use('/api/auth', authRouter);
 app.use('/api/salespersons', salespersonsRouter);
 app.use('/api/customers', customersRouter);
+app.use('/api/reports', reportsRouter);
 
 // ── 404 / Error ───────────────────────────
 app.use(notFound);
