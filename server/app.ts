@@ -2,6 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import healthRouter from './routes/health.js';
 import authRouter from './routes/auth.js';
+import salespersonsRouter from './routes/salespersons.js';
 import { errorHandler } from './middleware/errorHandler.js';
 import { notFound } from './middleware/notFound.js';
 
@@ -35,6 +36,7 @@ if (process.env.NODE_ENV !== 'production') {
 // ── Routes ────────────────────────────────
 app.use('/api/health', healthRouter);
 app.use('/api/auth', authRouter);
+app.use('/api/salespersons', salespersonsRouter);
 
 // ── 404 / Error ───────────────────────────
 app.use(notFound);
