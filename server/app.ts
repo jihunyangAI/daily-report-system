@@ -8,6 +8,7 @@ import reportsRouter from './routes/reports.js';
 import visitsRouter from './routes/visits.js';
 import problemsRouter from './routes/problems.js';
 import plansRouter from './routes/plans.js';
+import { problemCommentsRouter, planCommentsRouter } from './routes/comments.js';
 import { errorHandler } from './middleware/errorHandler.js';
 import { notFound } from './middleware/notFound.js';
 
@@ -47,6 +48,8 @@ app.use('/api/reports', reportsRouter);
 app.use('/api/reports/:reportId/visits', visitsRouter);
 app.use('/api/reports/:reportId/problems', problemsRouter);
 app.use('/api/reports/:reportId/plans', plansRouter);
+app.use('/api/problems/:problemId/comments', problemCommentsRouter);
+app.use('/api/plans/:planId/comments', planCommentsRouter);
 
 // ── 404 / Error ───────────────────────────
 app.use(notFound);
