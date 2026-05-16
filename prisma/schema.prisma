@@ -1,4 +1,5 @@
 // prisma/schema.prisma
+// MySQL 8.0+ / utf8mb4 / InnoDB
 
 generator client {
   provider = "prisma-client-js"
@@ -11,6 +12,7 @@ datasource db {
 
 // ──────────────────────────────────────────
 // Enum
+// DDL의 CHECK(status IN ('DRAFT','SUBMITTED','CONFIRMED'))을 타입 안전하게 대체
 // ──────────────────────────────────────────
 
 enum ReportStatus {
@@ -36,7 +38,6 @@ model Salesperson {
   createdAt    DateTime @default(now()) @map("created_at")
   updatedAt    DateTime @updatedAt @map("updated_at")
 
-  // 자기참조: 상급자
   manager      Salesperson?  @relation("ManagerToSubordinate", fields: [managerId], references: [id], onDelete: SetNull, onUpdate: Cascade)
   subordinates Salesperson[] @relation("ManagerToSubordinate")
 
@@ -70,6 +71,7 @@ model Customer {
 
 // ──────────────────────────────────────────
 // 일일보고 헤더
+// @@unique([salespersonId, reportDate]) = 1사원 1일 1보고 제약
 // ──────────────────────────────────────────
 
 model DailyReport {
@@ -87,7 +89,6 @@ model DailyReport {
   problems     Problem[]
   plans        Plan[]
 
-  // 1사원 1일 1보고
   @@unique([salespersonId, reportDate])
   @@index([reportDate])
   @@index([status])
@@ -96,13 +97,15 @@ model DailyReport {
 
 // ──────────────────────────────────────────
 // 방문기록
+// visitTime: DDL은 TIME 타입이나 API 명세가 "HH:MM" 문자열을 사용하므로
+//            VarChar(5)로 저장해 변환 없이 직접 직렬화한다.
 // ──────────────────────────────────────────
 
 model VisitRecord {
   id            Int       @id @default(autoincrement()) @map("visit_id")
   reportId      Int       @map("report_id")
   customerId    Int       @map("customer_id")
-  visitTime     String?   @map("visit_time") @db.VarChar(5)   // "HH:MM"
+  visitTime     String?   @map("visit_time") @db.VarChar(5)
   visitPurpose  String?   @map("visit_purpose") @db.VarChar(500)
   visitContent  String?   @map("visit_content") @db.Text
   nextVisitDate DateTime? @map("next_visit_date") @db.Date
@@ -153,9 +156,9 @@ model Plan {
 
 // ──────────────────────────────────────────
 // 댓글
-// DDL의 ref_type+ref_id 다형성 →
-// Prisma 관계 선언을 위해 problemId / planId 분리
-// (둘 중 하나만 값이 들어감, 앱 레벨에서 보장)
+// DDL은 ref_type(PROBLEM|PLAN) + ref_id 다형성 패턴이나,
+// Prisma는 다형성 FK를 지원하지 않으므로 problemId / planId 두 컬럼으로 분리한다.
+// 앱 레벨에서 둘 중 하나에만 값을 설정하고 나머지는 NULL 로 유지한다.
 // ──────────────────────────────────────────
 
 model Comment {
