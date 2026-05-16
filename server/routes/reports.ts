@@ -9,6 +9,14 @@ import { formatReportDetail } from '../lib/reportHelpers.js';
 const router = Router();
 router.use(authenticate);
 
+// ISO 문자열 대신 로컬 날짜(YYYY-MM-DD)를 반환 — UTC 변환으로 인한 날짜 하루 밀림 방지
+function localDateStr(d: Date): string {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
+}
+
 const REPORT_INCLUDE = {
   salesperson: true,
   visitRecords: { include: { customer: true } },
@@ -52,7 +60,7 @@ router.get('/', async (req, res, next) => {
 
     sendPaginated(res, items.map(r => ({
       reportId: r.id,
-      reportDate: r.reportDate.toISOString().slice(0, 10),
+      reportDate: localDateStr(r.reportDate),
       status: r.status,
       visitCount: r._count.visitRecords,
       submittedAt: r.submittedAt?.toISOString().slice(0, 19) ?? null,
@@ -120,7 +128,7 @@ router.get('/team', async (req, res, next) => {
           : 0;
         return {
           reportId: r?.id ?? null,
-          reportDate: targetDate.toISOString().slice(0, 10),
+          reportDate: localDateStr(targetDate),
           salesperson: { salespersonId: s.id, name: s.name, department: s.department },
           status: r?.status ?? 'NONE',
           visitCount: r?._count.visitRecords ?? 0,
@@ -141,7 +149,7 @@ router.get('/team', async (req, res, next) => {
             : 0;
           return {
             reportId: r?.id ?? null,
-            reportDate: targetDate.toISOString().slice(0, 10),
+            reportDate: localDateStr(targetDate),
             salesperson: { salespersonId: s.id, name: s.name, department: s.department },
             status: curStatus,
             visitCount: r?._count.visitRecords ?? 0,
@@ -157,7 +165,7 @@ router.get('/team', async (req, res, next) => {
             : 0;
           return {
             reportId: r?.id ?? null,
-            reportDate: targetDate.toISOString().slice(0, 10),
+            reportDate: localDateStr(targetDate),
             salesperson: { salespersonId: s.id, name: s.name, department: s.department },
             status: r?.status ?? 'NONE',
             visitCount: r?._count.visitRecords ?? 0,

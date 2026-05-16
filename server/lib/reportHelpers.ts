@@ -1,6 +1,13 @@
 // 보고서 상세 응답 포맷터 (GET /reports/:id 에서 사용)
 import type { DailyReport, Salesperson, VisitRecord, Customer, Problem, Plan, Comment } from '@prisma/client';
 
+function localDateStr(d: Date): string {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
+}
+
 type ReportDetail = DailyReport & {
   salesperson: Salesperson;
   visitRecords: (VisitRecord & { customer: Customer })[];
@@ -11,7 +18,7 @@ type ReportDetail = DailyReport & {
 export function formatReportDetail(r: ReportDetail) {
   return {
     reportId: r.id,
-    reportDate: r.reportDate.toISOString().slice(0, 10),
+    reportDate: localDateStr(r.reportDate),
     status: r.status,
     salesperson: {
       salespersonId: r.salesperson.id,
@@ -33,7 +40,7 @@ export function formatReportDetail(r: ReportDetail) {
       visitTime: v.visitTime,
       visitPurpose: v.visitPurpose,
       visitContent: v.visitContent,
-      nextVisitDate: v.nextVisitDate?.toISOString().slice(0, 10) ?? null,
+      nextVisitDate: v.nextVisitDate ? localDateStr(v.nextVisitDate) : null,
     })),
     problems: r.problems.map(p => ({
       problemId: p.id,
