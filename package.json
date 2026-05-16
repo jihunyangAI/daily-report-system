@@ -21,6 +21,8 @@
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.2",
     "@testing-library/user-event": "^14.6.1",
+    "@types/bcryptjs": "^2.4.6",
+    "@types/node": "^25.8.0",
     "@types/react": "^19.1.0",
     "@types/react-dom": "^19.1.0",
     "@typescript-eslint/eslint-plugin": "^8.31.0",
@@ -38,6 +40,7 @@
     "lint-staged": "^17.0.4",
     "prettier": "^3.8.3",
     "prisma": "^6.19.3",
+    "tsx": "^4.22.0",
     "typescript": "^5.8.3",
     "typescript-eslint": "^8.31.0",
     "vite": "^8.0.13",
@@ -45,8 +48,12 @@
   },
   "dependencies": {
     "@prisma/client": "^6.19.3",
+    "bcryptjs": "^3.0.3",
     "react": "^19.2.6",
     "react-dom": "^19.2.6"
+  },
+  "prisma": {
+    "seed": "tsx prisma/seed.ts"
   },
   "lint-staged": {
     "src/**/*.{ts,tsx}": [
