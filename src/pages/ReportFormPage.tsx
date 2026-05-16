@@ -61,37 +61,33 @@ export default function ReportFormPage() {
     if (!reportId) return;
     setSaving(true);
     try {
-      // 방문기록 동기화
-      const existingIds = new Set(report?.visits.map(v => v.visitId) ?? []);
+      // 방문기록 동기화 — v.id 존재 여부로 신규/기존 구분 (임시저장 후 중복 생성 방지)
       for (const v of visits) {
         if (!v.customerId) continue;
         const payload = { customerId: v.customerId, visitTime: v.visitTime || null, visitPurpose: v.visitPurpose || null, visitContent: v.visitContent || null, nextVisitDate: v.nextVisitDate || null };
-        if (v.id && existingIds.has(v.id)) await reportsApi.updateVisit(reportId, v.id, payload);
+        if (v.id) await reportsApi.updateVisit(reportId, v.id, payload);
         else { const r = await reportsApi.addVisit(reportId, payload); v.id = r.data.data.visitId; }
       }
-      // 삭제된 방문기록
-      const currentIds = new Set(visits.map(v => v.id).filter(Boolean));
-      for (const v of report?.visits ?? []) if (!currentIds.has(v.visitId)) await reportsApi.deleteVisit(reportId, v.visitId);
+      const savedVisitIds = new Set(visits.map(v => v.id).filter(Boolean));
+      for (const v of report?.visits ?? []) if (!savedVisitIds.has(v.visitId)) await reportsApi.deleteVisit(reportId, v.visitId);
 
       // 과제/상담 동기화
-      const existingPIds = new Set(report?.problems.map(p => p.problemId) ?? []);
       for (const p of problems) {
         if (!p.content.trim()) continue;
-        if (p.id && existingPIds.has(p.id)) await reportsApi.updateProblem(reportId, p.id, { content: p.content });
+        if (p.id) await reportsApi.updateProblem(reportId, p.id, { content: p.content });
         else { const r = await reportsApi.addProblem(reportId, { content: p.content }); p.id = r.data.data.problemId; }
       }
-      const currentPIds = new Set(problems.map(p => p.id).filter(Boolean));
-      for (const p of report?.problems ?? []) if (!currentPIds.has(p.problemId)) await reportsApi.deleteProblem(reportId, p.problemId);
+      const savedProblemIds = new Set(problems.map(p => p.id).filter(Boolean));
+      for (const p of report?.problems ?? []) if (!savedProblemIds.has(p.problemId)) await reportsApi.deleteProblem(reportId, p.problemId);
 
       // 익일계획 동기화
-      const existingPlIds = new Set(report?.plans.map(p => p.planId) ?? []);
       for (const p of plans) {
         if (!p.content.trim()) continue;
-        if (p.id && existingPlIds.has(p.id)) await reportsApi.updatePlan(reportId, p.id, { content: p.content });
+        if (p.id) await reportsApi.updatePlan(reportId, p.id, { content: p.content });
         else { const r = await reportsApi.addPlan(reportId, { content: p.content }); p.id = r.data.data.planId; }
       }
-      const currentPlIds = new Set(plans.map(p => p.id).filter(Boolean));
-      for (const p of report?.plans ?? []) if (!currentPlIds.has(p.planId)) await reportsApi.deletePlan(reportId, p.planId);
+      const savedPlanIds = new Set(plans.map(p => p.id).filter(Boolean));
+      for (const p of report?.plans ?? []) if (!savedPlanIds.has(p.planId)) await reportsApi.deletePlan(reportId, p.planId);
 
       if (submit) {
         await reportsApi.submit(reportId);
