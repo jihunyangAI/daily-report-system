@@ -57,10 +57,11 @@ describe('TC-SP 영업사원 마스터', () => {
 
   // TC-SP-003: 등록 성공
   it('TC-SP-003: 신규 영업사원 등록 성공 → 201', async () => {
+    const managerRecord = { id: 2, name: '팀장' };
     mockPrismaClient.salesperson.findUnique
       .mockResolvedValueOnce(adminRecord)    // requireAdmin
-      .mockResolvedValueOnce(null);          // 이메일 중복 체크
-    mockPrismaClient.salesperson.findFirst.mockResolvedValue({ id: 5 });
+      .mockResolvedValueOnce(null)           // 이메일 중복 체크
+      .mockResolvedValueOnce(managerRecord); // managerId 존재 확인
     mockPrismaClient.salesperson.create.mockResolvedValue({ id: 6 });
 
     const res = await request(app)
